@@ -5,7 +5,9 @@ import os
 import sys
 from pathlib import Path
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
+
+from gui.mainWindow import MainWindow
 
 
 def main(args):
@@ -14,14 +16,14 @@ def main(args):
 
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-    appDataDir = Path(os.getenv("APPDATA")).joinpath("phoneTimer")
+    appDataDir = Path(os.getenv("APPDATA")).joinpath("FuelEfficencyCalculator")
     if not appDataDir.exists():
         appDataDir.mkdir
 
-    # Write main code here!
+    mainWindow=MainWindow()
 
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":

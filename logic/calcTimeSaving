@@ -1,13 +1,13 @@
 import numpy as np
 
 
-def CalcTimeSaving():
+class CalcTimeSaving():
     def __init__(self):
         self.intervall=5
         self.refSpeed=130
 
     def doCalculation(self, minSpeed:int, maxSpeed:int, distance:float):
-        speedArry=np.aragen(minSpeed, self.intervall, maxSpeed, int)
+        speedArry=np.arange(minSpeed, self.intervall, maxSpeed, int)
         timeSavingArray=[]
 
         for speed in speedArry:

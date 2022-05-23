@@ -8,6 +8,7 @@ _inputHight=26
 #ToDO:
 # 1. Move Calculation to Logic Class
 # 2. Catch invalid user inputs
+# 3. Add statistics table
 class DataTab(QWidget):
     def __init__(self):
         super().__init__()
@@ -28,7 +29,7 @@ class DataTab(QWidget):
         # Add empty plot
         self.plot=pg.PlotWidget()
         self.plot.setBackground('w')
-        self._curves = {} #This is a empy array for all the curveIds
+        self.curveRef = None  #This is storageFiled for the curveRef
 
         #Styling and Labeling
         self.plot.setTitle("Timesaving over the driven speed", size="30pt")
@@ -62,10 +63,15 @@ class DataTab(QWidget):
         grid.addWidget(self.distance, 2,1)
         grid.addWidget(QLabel("distance [km]"), 2,0)
 
-        # Add Refresh button
-        refresh = QPushButton("Refresh")
+        # Add control buttons
+        refresh=QPushButton("Refresh")
         refresh.clicked.connect(self.__refreshPlot)
-        grid.addWidget(refresh,3, 0, 1, 4)
+        grid.addWidget(refresh,3, 0, 1, 2)
+
+        clearGraph=QPushButton("Clear Graph")
+        clearGraph.clicked.connect(self.__clearPlot)
+        grid.addWidget(clearGraph, 3, 2, 1,2)
+
 
     def __refreshPlot(self):
         if self.minSpeedInput.text()=="" or self.maxSpeedInput.text=="" or self.distance.text()=="":
@@ -74,17 +80,17 @@ class DataTab(QWidget):
         # ToDo Catch more wrong user input and add nice error message
 
         [speedArry, timeSavingArray]=self.doCalculation(int(self.minSpeedInput.text()), int(self.maxSpeedInput.text()), int(self.distance.text()))
-        if not self._curves:
-            self._curves=self.plot.plot(speedArry, timeSavingArray)
+        if not self.curveRef:
+            self.curveRef=self.plot.plot(speedArry, timeSavingArray)
         else:
-            self._curves.setData(speedArry, timeSavingArray)
+            self.curveRef.setData(speedArry, timeSavingArray)
 
     def __clearPlot(self):
-        for curve in self._curves:
-            self.plot.removeItem(curve)
-        
-        self._curves.clear() # Ideally every element is removed right after the curve is cleared
+        if not self.curveRef:
+            return
 
+        self.plot.removeItem(self.curveRef)
+        self.curveRef=None
 
 
     #ToDo This should be moved to the logics tab, but for some reason packages are not working atm

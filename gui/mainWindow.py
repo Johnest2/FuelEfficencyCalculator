@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QGridLayout, QMainWindow, QTabWidget, QWidget
 
 from .dataTab import DataTab
-from .googleMapsTab import GoogleMapsTab
+from .osmTab import OsmMapsTab
 from .settingsTab import SettingsTab
 
 
@@ -21,9 +21,9 @@ class MainWindow(QMainWindow):
         tabs=QTabWidget()
         dataTab=DataTab()
         settingsTab=SettingsTab()
-        googleMapsTab=GoogleMapsTab()
+        osmMapsTab=OsmMapsTab()
         tabs.addTab(dataTab, "Data")
-        tabs.addTab(googleMapsTab, "Google Maps")
+        tabs.addTab(osmMapsTab, "OpenStreet Maps")
         tabs.addTab(settingsTab, "Settings")
         tabs.setDocumentMode(True)
         tabs.setMovable(True)

@@ -5,16 +5,21 @@ import os
 import sys
 from pathlib import Path
 
-from PyQt6.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication
 
-from gui.mainWindow import MainWindow
+from gui import MainWindow
 
 
 def main(args):
     app=QApplication(args)
-    myappid="FuelEfficencyCalculator"
 
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    try:
+        from ctypes import windll  # Only exists on Windows.
+        myappid="FuelEfficencyCalculator"
+        windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+    except ImportError:
+        pass
+    
 
     appDataDir = Path(os.getenv("APPDATA")).joinpath("FuelEfficencyCalculator")
     if not appDataDir.exists():
@@ -23,7 +28,7 @@ def main(args):
     mainWindow=MainWindow()
 
 
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":

@@ -1,20 +1,33 @@
-<title>OSM and Leaflet</title>
-<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
-<div id="map" style="width: 900px; height: 580px"></div>
-<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
-<script>
-    // Creating map options
-    var mapOptions = {
-        center: [45.641174, 9.114828],
-        zoom: 10
-    }
+<!DOCTYPE html>
+<html>
 
-    // Creating a map object
-    var map = new L.map('map', mapOptions);
+<head>
+    <meta charset="UTF-8">
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <!-- Import leaflet.css and leaflet.js from external source-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+        integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+        crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+        integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+        crossorigin=""></script>
+    <script type="text/javascript" src="map.js"></script>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
 
-    // Creating a Layer object
-    var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+        html,
+        body,
+        #map {
+            height: 100%;
+        }
+    </style>
+</head>
 
-    // Adding layer to the map
-    map.addLayer(layer);
-</script>
+<body onload="initialize()">
+    <div id="map"></div>
+</body>
+
+</html>

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QGridLayout, QMainWindow, QTabWidget, QWidget
+from PyQt5.QtWidgets import QGridLayout, QMainWindow, QTabWidget, QWidget
 
 from .dataTab import DataTab
 from .osmTab import OsmMapsTab

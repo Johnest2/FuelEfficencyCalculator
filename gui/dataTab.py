@@ -1,18 +1,17 @@
 import datetime
 from string import Template
 
+import logic
 import numpy as np
 import pyqtgraph
-from PyQt6.QtWidgets import (QGridLayout, QHBoxLayout, QLabel, QLineEdit,
+from logic import *
+from PyQt5.QtWidgets import (QGridLayout, QHBoxLayout, QLabel, QLineEdit,
                              QPushButton, QScrollArea, QWidget)
 
 _inputHight=26
 
-#ToDO:
-# 1. Move Calculation to Logic Class
-# 2. Catch invalid user inputs
-# 3. Add more statistics data
-# 4. Add Mouse position
+# TODO #2 Add more statistics data
+# TODO #3 Add Mouse position hover window
 class DataTab(QWidget):
     def __init__(self):
         super().__init__()
@@ -56,7 +55,7 @@ class DataTab(QWidget):
         self.minSpeedInput.setText('60')
         grid.addWidget(self.minSpeedInput, 1,1)
         grid.addWidget(QLabel("Min Speed [km/h]"), 1,0)
-
+        
         self.maxSpeedInput=QLineEdit()
         self.maxSpeedInput.setMaximumHeight(_inputHight)
         self.maxSpeedInput.setText('170')
@@ -83,13 +82,14 @@ class DataTab(QWidget):
         grid.addWidget(self.outputMaxTimeSaving, 4, 0)
 
 
+
     def __refreshPlotAndStatistics(self):
         if self.minSpeedInput.text()=="" or self.maxSpeedInput.text=="" or self.distance.text()=="":
             raise Exception("Invalid input!")
 
-        # ToDo Catch more wrong user input and add nice error message
-
-        [speedArry, timeSavingArray]=self.doCalculation(int(self.minSpeedInput.text()), int(self.maxSpeedInput.text()), int(self.distance.text()))
+        # TODO #1 Catch more wrong user input and add nice error message
+        dataManager=logic.CalcTimeSaving()
+        [speedArry, timeSavingArray]=dataManager.doCalculation(int(self.minSpeedInput.text()), int(self.maxSpeedInput.text()), int(self.distance.text()))
         if not self.curveRef:
             self.curveRef=self.plot.plot(speedArry, timeSavingArray, pen=self.penSettings)
         else:
@@ -121,19 +121,6 @@ class DataTab(QWidget):
             mousePoint = self.plot.getPlotItem().vb.mapSceneToView(pos)
             self.crosshairVert.setPos(mousePoint.x())
             self.crosshairHorz.setPos(mousePoint.y())
-
-    #ToDo This should be moved to the logics tab, but for some reason packages are not working atm
-    def doCalculation(self, minSpeed:int, maxSpeed:int, distance:float):
-        intervall=5
-        refSpeed=130
-        speedArry=np.arange(minSpeed, maxSpeed, intervall)
-        timeSavingArray=[]
-
-        for speed in speedArry:
-            timeSavingArray.append( ((distance*(refSpeed - speed)) / (speed*refSpeed))*60 )
-
-        return [speedArry, timeSavingArray]
-
 class DeltaTemplate(Template):
     delimiter = "%"
 

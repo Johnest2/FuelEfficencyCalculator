@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 
 
@@ -7,11 +8,13 @@ class CalcTimeSaving():
         self.refSpeed=130
 
     def doCalculation(self, minSpeed:int, maxSpeed:int, distance:float):
-        speedArry=np.arange(minSpeed, self.intervall, maxSpeed, int)
+        intervall=5
+        refSpeed=130
+        speedArry=np.arange(minSpeed, maxSpeed, intervall)
         timeSavingArray=[]
 
         for speed in speedArry:
-            timeSavingArray.append( (distance*(self.refSpeed - speed)) / (speed*self.refSpeed) )
+            timeSavingArray.append( ((distance*(refSpeed - speed)) / (speed*refSpeed))*60 )
 
         return [speedArry, timeSavingArray]
 

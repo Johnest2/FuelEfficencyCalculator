@@ -1,18 +1,32 @@
 import functools
 import os
 
+import logic
+from logic import *
 from PyQt5 import QtCore, QtGui, QtWebChannel, QtWebEngineWidgets, QtWidgets
 from PyQt5.QtCore import QUrl
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
-from PyQt5.QtWidgets import QLabel, QSizePolicy, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (QLabel, QLineEdit, QPushButton, QSizePolicy,
+                             QVBoxLayout, QWidget)
 
 
+#TODO: #5 Add input for navigational route planning
 class OsmMapsTab(QWidget):
     def __init__(self):
         super().__init__()
         vbox = QtWidgets.QVBoxLayout()
         self.setLayout(vbox)
+
+        self.startLocation=QLineEdit()
+        self.startLocation.setText("Start Loaction")
+        self.targetLocation=QLineEdit()
+        self.targetLocation.setText("Target Location")
+        calcRouteButton=QPushButton("Calculate Route")
+        calcRouteButton.clicked.connect(self._calcRoute)
+        vbox.addWidget(self.startLocation)
+        vbox.addWidget(self.targetLocation)
+        vbox.addWidget(calcRouteButton)
 
         label = self.label = QtWidgets.QLabel()
         sp = QtWidgets.QSizePolicy()
@@ -48,6 +62,24 @@ class OsmMapsTab(QWidget):
     def panMap(self, lng, lat):
         page = self.view.page()
         page.runJavaScript("map.panTo(L.latLng({}, {}));".format(lat, lng))
+
+    def _calcRoute(self):
+        # if self.startLocation.text()=="" or self.targetLocation.text()=="":
+        #     raise Exception("Invalid input")
+        #TODO Check if valid text input
+
+        routeManager=logic.RouteManager()
+        coordStartLoc=routeManager.getCoordinatesOfLocation(self.startLocation.text())
+        coordTargetLoc=routeManager.getCoordinatesOfLocation(self.targetLocation.text())
+        routeDict=routeManager.getRoute(coordStartLoc, coordTargetLoc)
+        if routeDict is None:
+            return
+            
+        print(routeManager.getTotalDistanceOfRoute(routeDict))
+        
+
+
+        #TODO #6 Draw route in map
 
 class Interceptor(QWebEngineUrlRequestInterceptor):
     def interceptRequest(self, info):

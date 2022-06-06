@@ -1,29 +1,32 @@
 #!/usr/bin/env python3.9
 
 import ctypes
+import imp
 import os
 import sys
 from pathlib import Path
 
+from appdirs import AppDirs
 from PyQt5.QtWidgets import QApplication
 
 from gui import MainWindow
+from settings import Settings
+from settingsManager import SettingsManager
 
 
 def main(args):
     app=QApplication(args)
-
+    myappid="FuelEfficencyCalculator"
+    
     try:
         from ctypes import windll  # Only exists on Windows.
-        myappid="FuelEfficencyCalculator"
         windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
         pass
     
-
-    appDataDir = Path(os.getenv("APPDATA")).joinpath("FuelEfficencyCalculator")
-    if not appDataDir.exists():
-        appDataDir.mkdir
+    dirs=AppDirs(myappid,"FuelDev")
+    settings=Settings()
+    settingsManager=SettingsManager(settings, myappid, dirs.user_data_dir)
 
     mainWindow=MainWindow()
 

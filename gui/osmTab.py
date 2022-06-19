@@ -1,5 +1,6 @@
 import functools
 import os
+from typing import Dict
 
 import logic
 from logic import *
@@ -13,9 +14,12 @@ from PyQt5.QtWidgets import (QLabel, QLineEdit, QPushButton, QSizePolicy,
 
 #TODO: #5 Add input for navigational route planning
 class OsmMapsTab(QWidget):
-    def __init__(self):
+    def __init__(self, settingsDict: Dict) -> None:
         super().__init__()
-        vbox = QtWidgets.QVBoxLayout()
+
+        self.settingsDict=settingsDict
+
+        vbox = QVBoxLayout()
         self.setLayout(vbox)
 
         self.startLocation=QLineEdit()
@@ -56,31 +60,29 @@ class OsmMapsTab(QWidget):
 
 
     @QtCore.pyqtSlot(float, float)
-    def onMapMove(self, lat, lng):
+    def onMapMove(self, lat:float, lng:float) -> None:
         self.label.setText("Lng: {:.5f}, Lat: {:.5f}".format(lng, lat))
 
-    def panMap(self, lng, lat):
+    def panMap(self, lng:float, lat:float) -> None:
         page = self.view.page()
         page.runJavaScript("map.panTo(L.latLng({}, {}));".format(lat, lng))
 
-    def _calcRoute(self):
+    def _calcRoute(self) -> None:
         # if self.startLocation.text()=="" or self.targetLocation.text()=="":
         #     raise Exception("Invalid input")
         #TODO Check if valid text input
 
-        routeManager=logic.RouteManager()
+        routeManager=logic.RouteManager(self.settingsDict["openRouteServiceApiKey"])
         coordStartLoc=routeManager.getCoordinatesOfLocation(self.startLocation.text())
         coordTargetLoc=routeManager.getCoordinatesOfLocation(self.targetLocation.text())
         routeDict=routeManager.getRoute(coordStartLoc, coordTargetLoc)
         if routeDict is None:
             return
-            
-        print(routeManager.getTotalDistanceOfRoute(routeDict))
+        # print(f'Total Distance of the route: {routeManager.getTotalDistanceOfRoute(routeDict) : .2f}')
         
-
-
+        
         #TODO #6 Draw route in map
 
 class Interceptor(QWebEngineUrlRequestInterceptor):
-    def interceptRequest(self, info):
+    def interceptRequest(self, info) -> None:
         info.setHttpHeader(b"Accept-Language", b"en-US,en;q=0.9,es;q=0.8,de;q=0.7")

@@ -1,25 +1,25 @@
-from PyQt5.QtCore import pyqtSignal
+
+import event
 from PyQt5.QtWidgets import (QGridLayout, QInputDialog, QLabel, QLineEdit,
                              QPushButton, QScrollArea, QVBoxLayout, QWidget)
 
 
 class SettingsTab(QWidget):
-    triggerSetApiKey=pyqtSignal(str, name='triggerSetApiKey')
-
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-        vbox = QVBoxLayout()
-        self.setLayout(vbox)
+        vboxLayout = QVBoxLayout()
 
-        vbox.addWidget(QLabel("API Key Label"))
+        vboxLayout.addWidget(QLabel("API Key Label"))
         insertApiKeyBtn=QPushButton("Insert OpenRouteService API Key")
         insertApiKeyBtn.clicked.connect(self._insertApiKey)
-        vbox.addWidget(insertApiKeyBtn)
-    
+        vboxLayout.addWidget(insertApiKeyBtn)
 
-    def _insertApiKey(self):
+        self.setLayout(vboxLayout)
+
+
+    def _insertApiKey(self) -> None:
         text, okPressed = QInputDialog.getText(self, "Insert OpenRouteService API Key","API-Key:", QLineEdit.Normal, "")
         if okPressed and text != '':
-            self.triggerSetApiKey.emit(str(text))
+            event.postEvent("newApiKeyInserted", text)
         

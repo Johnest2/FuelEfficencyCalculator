@@ -3,7 +3,7 @@ import numpy as np
 
 
 class CalcTimeSaving():
-    def __init__(self):
+    def __init__(self) -> None:
         self.intervall=1
         self.refSpeed=130
 

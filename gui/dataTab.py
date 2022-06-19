@@ -1,5 +1,6 @@
 import datetime
 from string import Template
+from typing import Tuple
 
 import logic
 import numpy as np
@@ -13,7 +14,7 @@ _inputHight=26
 # TODO #2 Add more statistics data
 # TODO #3 Add Mouse position hover window
 class DataTab(QWidget):
-    def __init__(self):
+    def __init__(self, settingsDict) -> None:
         super().__init__()
         hbox=QHBoxLayout()
 
@@ -52,13 +53,13 @@ class DataTab(QWidget):
 
         self.minSpeedInput=QLineEdit()
         self.minSpeedInput.setMaximumHeight(_inputHight)
-        self.minSpeedInput.setText('60')
+        self.minSpeedInput.setText(str(settingsDict["minSpeed"]))
         grid.addWidget(self.minSpeedInput, 1,1)
         grid.addWidget(QLabel("Min Speed [km/h]"), 1,0)
         
         self.maxSpeedInput=QLineEdit()
         self.maxSpeedInput.setMaximumHeight(_inputHight)
-        self.maxSpeedInput.setText('170')
+        self.maxSpeedInput.setText(str(settingsDict["maxSpeed"]))
         grid.addWidget(self.maxSpeedInput, 1,3)
         grid.addWidget(QLabel("Max Speed [km/h]"), 1,2)
         
@@ -83,7 +84,7 @@ class DataTab(QWidget):
 
 
 
-    def __refreshPlotAndStatistics(self):
+    def __refreshPlotAndStatistics(self) -> None:
         if self.minSpeedInput.text()=="" or self.maxSpeedInput.text=="" or self.distance.text()=="":
             raise Exception("Invalid input!")
 
@@ -108,21 +109,22 @@ class DataTab(QWidget):
 
         self.outputMaxTimeSaving.setText("Time saving at max speed: " + str(outValue))
 
-    def __clearPlot(self):
+    def __clearPlot(self) -> None:
         if not self.curveRef:
             return
 
         self.plot.removeItem(self.curveRef)
         self.curveRef=None
 
-    def __updateCrosshair(self, e):
+    def __updateCrosshair(self, e: Tuple) -> None:
         pos=e[0]
         if self.plot.sceneBoundingRect().contains(pos):
             mousePoint = self.plot.getPlotItem().vb.mapSceneToView(pos)
             self.crosshairVert.setPos(mousePoint.x())
             self.crosshairHorz.setPos(mousePoint.y())
+
+
 class DeltaTemplate(Template):
     delimiter = "%"
 
         
-

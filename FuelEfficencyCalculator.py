@@ -10,7 +10,6 @@ from appdirs import AppDirs
 from PyQt5.QtWidgets import QApplication
 
 from gui import MainWindow
-from settings import Settings
 from settingsManager import SettingsManager
 
 
@@ -25,10 +24,13 @@ def main(args):
         pass
     
     dirs=AppDirs(myappid,"FuelDev")
-    settings=Settings()
-    settingsManager=SettingsManager(settings, myappid, dirs.user_data_dir)
+    try:
+        os.makedirs(dirs.user_data_dir)
+    except FileExistsError:
+        pass
+    settingsManager=SettingsManager( myappid, dirs.user_data_dir)
 
-    mainWindow=MainWindow()
+    mainWindow=MainWindow(settingsDict=settingsManager.settingsDict)
 
 
     sys.exit(app.exec_())

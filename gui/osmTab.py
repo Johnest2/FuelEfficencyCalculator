@@ -2,6 +2,7 @@ import functools
 import os
 from typing import Dict
 
+import event
 import logic
 from logic import *
 from PyQt5 import QtCore, QtGui, QtWebChannel, QtWebEngineWidgets, QtWidgets
@@ -70,7 +71,7 @@ class OsmMapsTab(QWidget):
     def _calcRoute(self) -> None:
         # if self.startLocation.text()=="" or self.targetLocation.text()=="":
         #     raise Exception("Invalid input")
-        #TODO Check if valid text input
+        #TODO #11 Check if valid text input
 
         routeManager=logic.RouteManager(self.settingsDict["openRouteServiceApiKey"])
         coordStartLoc=routeManager.getCoordinatesOfLocation(self.startLocation.text())
@@ -78,8 +79,9 @@ class OsmMapsTab(QWidget):
         routeDict=routeManager.getRoute(coordStartLoc, coordTargetLoc)
         if routeDict is None:
             return
-        # print(f'Total Distance of the route: {routeManager.getTotalDistanceOfRoute(routeDict) : .2f}')
-        
+    
+        # Update scope with new Distance
+        event.postEvent("updateScope", routeManager.getHighwayDistanceOfRoute(routeDict))
         
         #TODO #6 Draw route in map
 

@@ -1,7 +1,8 @@
 import datetime
 from string import Template
-from typing import Tuple
+from typing import Optional, Tuple
 
+import event
 import logic
 import numpy as np
 import pyqtgraph
@@ -82,15 +83,21 @@ class DataTab(QWidget):
         self.outputMaxTimeSaving.setText("Max Time Saving:")
         grid.addWidget(self.outputMaxTimeSaving, 4, 0)
 
+        #Add Events
+        event.subscribe("updateScope", self.__refreshPlotAndStatistics)
 
 
-    def __refreshPlotAndStatistics(self) -> None:
-        if self.minSpeedInput.text()=="" or self.maxSpeedInput.text=="" or self.distance.text()=="":
-            raise Exception("Invalid input!")
 
-        # TODO #1 Catch more wrong user input and add nice error message
+    def __refreshPlotAndStatistics(self, distanceParam: Optional[int] = None ) -> None:
+        if self.minSpeedInput.text()=="" or self.maxSpeedInput.text=="" or (not distanceParam and self.distance.text()==""): #or not (type(distanceParam) == int or type(distanceParam) == float)
+            raise Exception("Invalid input!") # TODO #1 Catch more wrong user input and add nice error message
+
+        #Select witch distance to use
+        usedDistance = float(self.distance.text()) if not distanceParam else distanceParam
+        self.distance.setText(str(usedDistance))
+
         dataManager=logic.CalcTimeSaving()
-        [speedArry, timeSavingArray]=dataManager.doCalculation(int(self.minSpeedInput.text()), int(self.maxSpeedInput.text()), int(self.distance.text()))
+        [speedArry, timeSavingArray]=dataManager.doCalculation(int(self.minSpeedInput.text()), int(self.maxSpeedInput.text()), float(usedDistance))
         if not self.curveRef:
             self.curveRef=self.plot.plot(speedArry, timeSavingArray, pen=self.penSettings)
         else:

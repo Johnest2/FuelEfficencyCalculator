@@ -1,20 +1,21 @@
 import datetime
 from string import Template
+from typing import Optional, Tuple
 
+import event
+import logic
 import numpy as np
 import pyqtgraph
-from PyQt6.QtWidgets import (QGridLayout, QHBoxLayout, QLabel, QLineEdit,
+from logic import *
+from PyQt5.QtWidgets import (QGridLayout, QHBoxLayout, QLabel, QLineEdit,
                              QPushButton, QScrollArea, QWidget)
 
 _inputHight=26
 
-#ToDO:
-# 1. Move Calculation to Logic Class
-# 2. Catch invalid user inputs
-# 3. Add more statistics data
-# 4. Add Mouse position
+# TODO #2 Add more statistics data
+# TODO #3 Add Mouse position hover window
 class DataTab(QWidget):
-    def __init__(self):
+    def __init__(self, settingsDict) -> None:
         super().__init__()
         hbox=QHBoxLayout()
 
@@ -53,13 +54,13 @@ class DataTab(QWidget):
 
         self.minSpeedInput=QLineEdit()
         self.minSpeedInput.setMaximumHeight(_inputHight)
-        self.minSpeedInput.setText('60')
+        self.minSpeedInput.setText(str(settingsDict["minSpeed"]))
         grid.addWidget(self.minSpeedInput, 1,1)
         grid.addWidget(QLabel("Min Speed [km/h]"), 1,0)
-
+        
         self.maxSpeedInput=QLineEdit()
         self.maxSpeedInput.setMaximumHeight(_inputHight)
-        self.maxSpeedInput.setText('170')
+        self.maxSpeedInput.setText(str(settingsDict["maxSpeed"]))
         grid.addWidget(self.maxSpeedInput, 1,3)
         grid.addWidget(QLabel("Max Speed [km/h]"), 1,2)
         
@@ -82,14 +83,21 @@ class DataTab(QWidget):
         self.outputMaxTimeSaving.setText("Max Time Saving:")
         grid.addWidget(self.outputMaxTimeSaving, 4, 0)
 
+        #Add Events
+        event.subscribe("updateScope", self.__refreshPlotAndStatistics)
 
-    def __refreshPlotAndStatistics(self):
-        if self.minSpeedInput.text()=="" or self.maxSpeedInput.text=="" or self.distance.text()=="":
-            raise Exception("Invalid input!")
 
-        # ToDo Catch more wrong user input and add nice error message
 
-        [speedArry, timeSavingArray]=self.doCalculation(int(self.minSpeedInput.text()), int(self.maxSpeedInput.text()), int(self.distance.text()))
+    def __refreshPlotAndStatistics(self, distanceParam: Optional[int] = None ) -> None:
+        if self.minSpeedInput.text()=="" or self.maxSpeedInput.text=="" or (not distanceParam and self.distance.text()==""): #or not (type(distanceParam) == int or type(distanceParam) == float)
+            raise Exception("Invalid input!") # TODO #1 Catch more wrong user input and add nice error message
+
+        #Select witch distance to use
+        usedDistance = float(self.distance.text()) if not distanceParam else distanceParam
+        self.distance.setText(str(usedDistance))
+
+        dataManager=logic.CalcTimeSaving()
+        [speedArry, timeSavingArray]=dataManager.doCalculation(int(self.minSpeedInput.text()), int(self.maxSpeedInput.text()), float(usedDistance))
         if not self.curveRef:
             self.curveRef=self.plot.plot(speedArry, timeSavingArray, pen=self.penSettings)
         else:
@@ -108,34 +116,22 @@ class DataTab(QWidget):
 
         self.outputMaxTimeSaving.setText("Time saving at max speed: " + str(outValue))
 
-    def __clearPlot(self):
+    def __clearPlot(self) -> None:
         if not self.curveRef:
             return
 
         self.plot.removeItem(self.curveRef)
         self.curveRef=None
 
-    def __updateCrosshair(self, e):
+    def __updateCrosshair(self, e: Tuple) -> None:
         pos=e[0]
         if self.plot.sceneBoundingRect().contains(pos):
             mousePoint = self.plot.getPlotItem().vb.mapSceneToView(pos)
             self.crosshairVert.setPos(mousePoint.x())
             self.crosshairHorz.setPos(mousePoint.y())
 
-    #ToDo This should be moved to the logics tab, but for some reason packages are not working atm
-    def doCalculation(self, minSpeed:int, maxSpeed:int, distance:float):
-        intervall=5
-        refSpeed=130
-        speedArry=np.arange(minSpeed, maxSpeed, intervall)
-        timeSavingArray=[]
-
-        for speed in speedArry:
-            timeSavingArray.append( ((distance*(refSpeed - speed)) / (speed*refSpeed))*60 )
-
-        return [speedArry, timeSavingArray]
 
 class DeltaTemplate(Template):
     delimiter = "%"
 
         
-

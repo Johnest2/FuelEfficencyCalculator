@@ -1,44 +1,90 @@
 import functools
 import os
+from typing import Dict
 
-from PyQt6 import QtCore
-from PyQt6.QtCore import QUrl
-from PyQt6.QtWebChannel import QWebChannel
-from PyQt6.QtWebEngineCore import QWebEngineUrlRequestInterceptor
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtWidgets import QLabel, QSizePolicy, QVBoxLayout, QWidget
+import event
+import logic
+from logic import *
+from PyQt5 import QtCore, QtGui, QtWebChannel, QtWebEngineWidgets, QtWidgets
+from PyQt5.QtCore import QUrl
+from PyQt5.QtWebChannel import QWebChannel
+from PyQt5.QtWebEngineCore import QWebEngineUrlRequestInterceptor
+from PyQt5.QtWidgets import (QLabel, QLineEdit, QPushButton, QSizePolicy,
+                             QVBoxLayout, QWidget)
 
 
+#TODO: #5 Add input for navigational route planning
 class OsmMapsTab(QWidget):
-    def __init__(self):
+    def __init__(self, settingsDict: Dict) -> None:
         super().__init__()
-        vbox=QVBoxLayout()
+
+        self.settingsDict=settingsDict
+
+        vbox = QVBoxLayout()
         self.setLayout(vbox)
 
-        self.label = QLabel()
-        sp = QSizePolicy()
-        sp.setVerticalStretch(0)
-        self.label.setSizePolicy(sp)
-        vbox.addWidget(self.label)
-        self.view = QWebEngineView()
-        # self.channel = QWebChannel()
+        self.startLocation=QLineEdit()
+        self.startLocation.setText("Start Loaction")
+        self.targetLocation=QLineEdit()
+        self.targetLocation.setText("Target Location")
+        calcRouteButton=QPushButton("Calculate Route")
+        calcRouteButton.clicked.connect(self._calcRoute)
+        vbox.addWidget(self.startLocation)
+        vbox.addWidget(self.targetLocation)
+        vbox.addWidget(calcRouteButton)
 
-        # self.channel.registerObject("OsmMapsTab", self)
-        # self.view.page().setWebChannel(self.channel)
+        label = self.label = QtWidgets.QLabel()
+        sp = QtWidgets.QSizePolicy()
+        sp.setVerticalStretch(0)
+        label.setSizePolicy(sp)
+        vbox.addWidget(label)
+        view = self.view = QtWebEngineWidgets.QWebEngineView()
+        channel = self.channel = QtWebChannel.QWebChannel()
+
+        channel.registerObject("MainWindow", self)
+        view.page().setWebChannel(channel)
 
         file = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
-            "assets\map.html",
+            "assets/map.html",
         )
-
         interceptor = Interceptor()
         self.view.page().profile().setUrlRequestInterceptor(interceptor)
-        self.view.load(QUrl.fromLocalFile(file))
-        self.view.show()
+        self.view.load(QtCore.QUrl.fromLocalFile(file))
 
-        vbox.addWidget(self.view)
+        vbox.addWidget(view)
 
+        button = QtWidgets.QPushButton("Go to Paris")
+        panToParis = functools.partial(self.panMap, 2.3272, 48.8620)
+        button.clicked.connect(panToParis)
+        vbox.addWidget(button)
+
+
+    @QtCore.pyqtSlot(float, float)
+    def onMapMove(self, lat:float, lng:float) -> None:
+        self.label.setText("Lng: {:.5f}, Lat: {:.5f}".format(lng, lat))
+
+    def panMap(self, lng:float, lat:float) -> None:
+        page = self.view.page()
+        page.runJavaScript("map.panTo(L.latLng({}, {}));".format(lat, lng))
+
+    def _calcRoute(self) -> None:
+        # if self.startLocation.text()=="" or self.targetLocation.text()=="":
+        #     raise Exception("Invalid input")
+        #TODO #11 Check if valid text input
+
+        routeManager=logic.RouteManager(self.settingsDict["openRouteServiceApiKey"])
+        coordStartLoc=routeManager.getCoordinatesOfLocation(self.startLocation.text())
+        coordTargetLoc=routeManager.getCoordinatesOfLocation(self.targetLocation.text())
+        routeDict=routeManager.getRoute(coordStartLoc, coordTargetLoc)
+        if routeDict is None:
+            return
+    
+        # Update scope with new Distance
+        event.postEvent("updateScope", routeManager.getHighwayDistanceOfRoute(routeDict))
+        
+        #TODO #6 Draw route in map
 
 class Interceptor(QWebEngineUrlRequestInterceptor):
-    def interceptRequest(self, info):
+    def interceptRequest(self, info) -> None:
         info.setHttpHeader(b"Accept-Language", b"en-US,en;q=0.9,es;q=0.8,de;q=0.7")

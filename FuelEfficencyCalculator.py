@@ -28,6 +28,8 @@ def main(args):
         os.makedirs(dirs.user_data_dir)
     except FileExistsError:
         pass
+#TODO: #14 Integrate logger
+
     settingsManager=SettingsManager( myappid, dirs.user_data_dir)
 
     mainWindow=MainWindow(settingsDict=settingsManager.settingsDict)

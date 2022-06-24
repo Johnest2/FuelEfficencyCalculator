@@ -53,7 +53,7 @@ class OsmMapsTab(QWidget):
         self.view.load(QtCore.QUrl.fromLocalFile(file))
 
         vbox.addWidget(view)
-
+        # TODO: #15 Add buttons to go to start and target location
         button = QtWidgets.QPushButton("Go to Paris")
         panToParis = functools.partial(self.panMap, 2.3272, 48.8620)
         button.clicked.connect(panToParis)
@@ -83,7 +83,7 @@ class OsmMapsTab(QWidget):
         # Update scope with new Distance
         event.postEvent("updateScope", routeManager.getHighwayDistanceOfRoute(routeDict))
         
-        #TODO #6 Draw route in map
+        #TODO #6 Draw route in map and set needle points at start and end location
 
 class Interceptor(QWebEngineUrlRequestInterceptor):
     def interceptRequest(self, info) -> None:
